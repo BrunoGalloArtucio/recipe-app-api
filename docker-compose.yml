@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+    app:
+        build:
+            context: . # build docker file inside our current directory
+            args:
+                - DEV=true # Set build argument DEV to true
+        ports:
+            - "8000:8000" # maps port 8000 in our local machine to port 8000 inside docker container
+        volumes:
+            - ./app:/app # maps directories in our system to docker container. This is so that
+              # updates in our code are reflected in real time instead of having to rebuild
+        command: >
+            sh -c "python manage.py runserver 0.0.0.0:8000"
