@@ -10,6 +10,7 @@ services:
             - "8000:8000" # maps port 8000 in our local machine to port 8000 inside docker container
         volumes:
             - ./app:/app # maps directories in our system to docker container. This is so that
-              # updates in our code are reflected in real time instead of having to rebuild
+              # updates in our code are reflected in real time in docker and viceversa,
+              # instead of having to rebuild
         command: >
             sh -c "python manage.py runserver 0.0.0.0:8000"

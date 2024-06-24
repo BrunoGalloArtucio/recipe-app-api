@@ -1,0 +1,25 @@
+---
+name: Checks
+
+on: [push]
+
+jobs:
+    test-lint:
+        name: Test and Lint
+        runs-on: ubuntu-20.04
+        steps:
+            - name: Log in to Docker hub
+              uses: docker/login-action@v1
+              with:
+                  username: ${{ secrets.DOCKERHUB_USER }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # We don't have to install docker-compose in ubuntu-20.04 because it comes pre-installed
+            - name: Test
+              run: docker-compose run --rm app sh -c "python manage.py test"
+
+            - name: Lint
+              run: docker-compose run --rm app sh -c "flake8"
