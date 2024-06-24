@@ -18,13 +18,23 @@ EXPOSE 8000
 
 # Set build argument DEV to false
 ARG DEV=false 
+
+# build-base postgresql-dev musl-dev are only needed to install postgresql
+# but not to run it, so we create a virtual dependency package and group them
+# in the tmp-build-deps folder. Then we delete it once we're done installing
+# our dependencies so as to keep our docker image light
+
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
+    apk add --update no-cache postgresql-client && \
+    apk add --update no-cache --virtual .tmp-build-deps \
+        build-base postgresql-dev musl-dev && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = "true" ]; \
         then /py/bin/pip install -r /tmp/requirements.dev.txt; \
     fi && \
     rm -rf /tmp && \
+    apk del .tmp-build-deps && \
     adduser \
         --disabled-password \
         --no-create-home \
