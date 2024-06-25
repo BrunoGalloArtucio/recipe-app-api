@@ -7,6 +7,7 @@ from django.core.management import call_command
 from django.db.utils import OperationalError
 from django.test import SimpleTestCase
 
+# We use SimpleTestCase because we don't need db for these tests
 
 # Mocks check method that checks database status to simulate the response.
 # We add the patch here so that it applies to all of the class's methods.
