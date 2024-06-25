@@ -57,6 +57,7 @@ class UserAdmin(BaseUserAdmin):
 
 
 # If we don't incldue UserAdmin here (it's optional param),
-# the the default behavior would be to use the default model
+# then the default behavior would be to use the default model
 # manager with the CRUD operations
 admin.site.register(models.User, UserAdmin)
+admin.site.register(models.Recipe)
