@@ -4,7 +4,6 @@ from decimal import Decimal
 # We use TestCase because we need db for these tests
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 from core import models
 
 

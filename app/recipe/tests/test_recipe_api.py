@@ -302,7 +302,8 @@ class PrivateRecipeApiTest(TestCase):
         self.assertIn(created_tag, recipe.tags.all())
 
     def test_update_recipe_assign_tag(self):
-        """Test assigning existing tag and removing previous tag when updating recipe"""
+        """Test assigning existing tag and removing previous
+        tag when updating recipe"""
         existing_tag = create_tag(self.user, name="Existing Tag 1")
         existing_tag_2 = create_tag(self.user, name="Existing Tag 2")
         recipe = create_recipe(self.user)
