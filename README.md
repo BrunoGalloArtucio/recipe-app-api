@@ -70,3 +70,4 @@ Recipes API
 -   We configure static/media URLs to behave differently in development vs prod in `app/app/urls.py`
 -   `SPECTACULAR_SETTINGS` is set in `settings.py` to ease file upload
 -   Adding query string parameter documentation and filtering by tags/ingredients (many-to-many) done in `RecipeViewSet.get_query_set` of `app/recipe/views.py`
+-   Added filtering tags/ingredients by assignation to recipes done in `BaseRecipeAttrViewSet.get_query_set` of `app/recipe/views.py`
