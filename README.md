@@ -9,6 +9,8 @@ Recipes API
 -   Configure docker-compose.yml file to be able to access our docker server via docker-compose:
 
     -   Build docker image: `docker-compose build`.
+    -   Tear down docker server: `docker-compose down`.
+    -   Set up docker server: `docker-compose up`.
     -   Run python commands: `docker-compose run --rm app sh -c "python manage.py <command>"`.
     -   Run server using `docker-compose up`
 
