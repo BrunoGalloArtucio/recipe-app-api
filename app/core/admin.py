@@ -7,6 +7,7 @@ from core import models
 from django.utils.translation import gettext_lazy as _
 
 
+# This class defines the information shown about users in admin page
 class UserAdmin(BaseUserAdmin):
     """Define the admin pages for users."""
     ordering = ['id']
@@ -62,3 +63,4 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Recipe)
 admin.site.register(models.Tag)
+admin.site.register(models.Ingredient)

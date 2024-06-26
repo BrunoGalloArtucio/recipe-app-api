@@ -47,7 +47,7 @@ class PublicTagApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class PrivateRecipeApiTest(TestCase):
+class PrivateTagApiTest(TestCase):
     """Tests for authenticated Tags API requests."""
 
     def setUp(self):
@@ -99,7 +99,7 @@ class PrivateRecipeApiTest(TestCase):
         self.assertEqual(tag.user, self.user)
         self.assertEqual(tag.name, payload["name"])
 
-    def test_delete_recipe(self):
+    def test_delete_tag(self):
         """Test deleting a tag succesfully"""
         tag = create_tag(
             user=self.user,

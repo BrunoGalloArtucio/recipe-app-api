@@ -25,6 +25,7 @@ Recipes API
 -   Automatically generate API Documentation using DRF (Django REST Framework) module `drf-spectacular`. First, we configured `drf_spectacular` in `INSTALLED_APPS` and `REST_FRAMEWORK` in `app/app/settings.py`. Then we enabled the doc URLs in `app/app/urls.py`
 -   API tests for user API: `app/user/tests/test_user_api.py`
 -   Models created in file `app/core/models.py`. These models are directly mapped to the DB by the ORM so every time a model is created/updated/deleted, the migration files must be generated using `docker-compose run --rm app sh -c "python manage.py makemigrations"`. These migrations are then automatically executed when building the app (check `docker-compose.yml` -> `services.app.build.command`).
+-   Models are then registered in the `app/core/admin.py` in order to be accessible through admin page.
 -   Use model serializers to validate and save data to our User Model: `app/user/serializers.py`
 -   Use `rest_framework` for create user API. User URls are defined in `app/user/urls.py` and then registered in `app/app/urls.py`. URLs use views which are defined in `app/user/views.py`. Views will determine which method will be available in each URL. Finally, views use serializers located in `app/user/serializers.py` to update the entities in the database.
 -   A view is what handles a request made to a URL.
@@ -36,3 +37,4 @@ Recipes API
 
 -   Recipe app includes a CRUD oriented API following the same pattern as users (serializer, view, urls). This API uses one serializer for the list (omits description field), and another one for the rest of the endpoints.
 -   The create method is overriden for `RecipeSerializer` in `app/recipe/serializers.py` so as to create the tags included in with the recipe if they don't exist, and then saved in the recipe
+-   Recipe model includes manyToMany relations
