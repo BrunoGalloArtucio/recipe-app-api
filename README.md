@@ -55,10 +55,17 @@ Recipes API
     -   `STATIC_ROOT`: Root directory on the server (`/vol/web/static`)
 
 -   Files will be stored in another docker volume: `/vol/web`. Static and media files will be stored in subdirectories of this volume.
--   There's a difference regarding media and static files between running Django in development and production mode. When we use development mode, we use django development server which is designed to serve the static files in an easier way. For static file URLs, the django development server maps the URLs apps to the `static` folders in each app. For media URLs, the django development server retrieves the files directly from the media root. For a deployed application, a reverse proxy is used:
+-   There's a difference regarding media and static files between running Django in development and production mode. When we use development mode, we use django development server which is designed to serve the static files in an easier way. For static file URLs, the django development server maps the URLs apps to the `static` folders in each app. For media URLs, the django development server retrieves the files directly from the media root.
+
+    -   `GET /static/static/admin/style.css` <- Django Dev Server <- `[admin]/static/style.css`
+    -   `GET /static/media/recipe/123.jpeg` <- `/vol/static/media/file.jpeg`
+
+-   For a deployed application, a reverse proxy is used:
 
     -   `GET /static/...` <- Reverse proxy <- `/vol/web/...`
     -   `GET /static/media/file.jpeg` <- `/vol/web/media/file.jpeg`
     -   `GET /static/static/admin/style.css` <- `/vol/web/static/admin/style.css`
 
 -   In order to gather up all static files for all of the apps in the project, we use the `python manage.py collectstatic` command. This puts all the static files for all the apps in the `STATIC_ROOT`.
+-   We configure static/media URLs to behave differently in development vs prod in `app/app/urls.py`
+-   `SPECTACULAR_SETTINGS` is set in `settings.py` to ease file upload

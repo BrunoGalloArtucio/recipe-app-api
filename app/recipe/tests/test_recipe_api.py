@@ -1,5 +1,9 @@
 """Tests for recipe APIs."""
 from decimal import Decimal
+import tempfile
+import os
+
+from PIL import Image
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -20,6 +24,11 @@ RECIPES_URL = reverse('recipe:recipe-list')
 def detail_url(recipe_id):
     """Create and return a recipe detail URL"""
     return reverse('recipe:recipe-detail', args=[recipe_id])
+
+
+def image_upload_url(recipe_id):
+    """Create and return an image upload URL"""
+    return reverse('recipe:recipe-upload-image', args=[recipe_id])
 
 
 def create_recipe(user, **params):
@@ -432,8 +441,8 @@ class PrivateRecipeApiTest(TestCase):
         created_ingredient = Ingredient.objects.get(
             user=self.user, name=ingredient_name
         )
-        # no need to recipe.refresh_from_db() because recipe.ingredients.all() does a
-        # new query since it's a many-to-many field
+        # no need to recipe.refresh_from_db() because recipe.ingredients.all()
+        # does a new query since it's a many-to-many field
         self.assertIn(created_ingredient, recipe.ingredients.all())
 
     def test_update_recipe_assign_ingredients(self):
@@ -458,8 +467,8 @@ class PrivateRecipeApiTest(TestCase):
         res = self.client.patch(detail_url(recipe.id), payload, format='json')
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        # no need to recipe.refresh_from_db() because recipe.ingredients.all() does a
-        # new query since it's a many-to-many field
+        # no need to recipe.refresh_from_db() because recipe.ingredients.all()
+        # does a new query since it's a many-to-many field
         recipe_ingredients = recipe.ingredients.all()
         self.assertIn(existing_ingredient, recipe_ingredients)
         self.assertNotIn(existing_ingredient_2, recipe_ingredients)
@@ -487,3 +496,50 @@ class PrivateRecipeApiTest(TestCase):
 
         all_ingredients = Ingredient.objects.filter(user=self.user)
         self.assertEqual(all_ingredients.count(), 2)
+
+
+class ImageUploadTests(TestCase):
+    """Tests for the image upload API"""
+
+    def setUp(self):
+        """Set up"""
+        self.client = APIClient()
+        self.user = create_user(email="user@example.com", password="pass12345")
+        self.client.force_authenticate(self.user)
+        self.recipe = create_recipe(user=self.user)
+
+    def tearDown(self):
+        """Tear down"""
+        self.recipe.image.delete()
+
+    def test_upload_image(self):
+        """Test uploading image to a recipe"""
+        url = image_upload_url(self.recipe.id)
+        # Create temporary file while we're in this context. As
+        # soon as the block ends, the file is deleted
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as image_file:
+            # Create 10x10 px black square
+            img = Image.new('RGB', (10, 10))
+            # Save file to temporary file
+            img.save(image_file, format="JPEG")
+            # Seek back to beginning of file. When saving, pointer goes to
+            # end of file
+            image_file.seek(0)
+
+            payload = {'image': image_file}
+            res = self.client.post(url, payload, format="multipart")
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.recipe.image.path))
+
+    def test_upload_image_bad_request(self):
+        """Test uploading invalid image to a recipe"""
+        url = image_upload_url(self.recipe.id)
+        payload = {'image': 'not-an-image'}
+        res = self.client.post(url, payload, format="multipart")
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(self.recipe.image.name)

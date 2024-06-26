@@ -24,6 +24,11 @@ ARG DEV=false
 # in the tmp-build-deps folder. Then we delete it once we're done installing
 # our dependencies so as to keep our docker image light
 
+# We need to create directories that will be used to store our media files
+# We have to create them after we create the user used to run the django app
+# so that we can assign him as the owner of this directory. Otherwise the 
+# directory will be created under the root user, and we'll face permission issues
+
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     apk add --update --no-cache postgresql-client jpeg-dev && \
@@ -38,7 +43,11 @@ RUN python -m venv /py && \
     adduser \
         --disabled-password \
         --no-create-home \
-        django-user
+        django-user && \
+    mkdir -p /vol/web/media && \
+    mkdir -p /vol/web/static && \
+    chown -R django-user:django-user /vol && \
+    chmod -R 755 /vol
 
 # Update PATH environment variable where executables will be run
 ENV PATH="/py/bin:$PATH"
