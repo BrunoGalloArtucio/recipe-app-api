@@ -497,6 +497,58 @@ class PrivateRecipeApiTest(TestCase):
         all_ingredients = Ingredient.objects.filter(user=self.user)
         self.assertEqual(all_ingredients.count(), 2)
 
+    def test_retrieve_recipes_by_tags(self):
+        """Test retrieving a list of recipes filtering by tags"""
+        recipe1 = create_recipe(self.user, title="Thai Vegetable Curry")
+        recipe2 = create_recipe(self.user, title="Eggplant with Tahini")
+        recipe3 = create_recipe(self.user, title="Fish and chips")
+
+        tag1 = create_tag(user=self.user, name="Vegan")
+        tag2 = create_tag(user=self.user, name="Vegetarian")
+
+        recipe1.tags.add(tag1)
+        recipe2.tags.add(tag2)
+
+        params = {
+            'tags': f"{tag1.id},{tag2.id}"
+        }
+        res = self.client.get(RECIPES_URL, params)
+
+        serialized_recipe1 = RecipeSerializer(recipe1)
+        serialized_recipe2 = RecipeSerializer(recipe2)
+        serialized_recipe3 = RecipeSerializer(recipe3)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(serialized_recipe1.data, res.data)
+        self.assertIn(serialized_recipe2.data, res.data)
+        self.assertNotIn(serialized_recipe3.data, res.data)
+
+    def test_retrieve_recipes_by_ingredients(self):
+        """Test retrieving a list of recipes filtering by ingredients"""
+        recipe1 = create_recipe(user=self.user, title="Posh beans on Toast")
+        recipe2 = create_recipe(user=self.user, title="Chicken Cacciatore")
+        recipe3 = create_recipe(user=self.user, title="Red Lentil Daal")
+
+        ingredient1 = create_ingredient(user=self.user, name="Feta Cheese")
+        ingredient2 = create_ingredient(user=self.user, name="Chicken")
+
+        recipe1.ingredients.add(ingredient1)
+        recipe2.ingredients.add(ingredient2)
+
+        params = {
+            'ingredients': f"{ingredient1.id},{ingredient2.id}"
+        }
+        res = self.client.get(RECIPES_URL, params)
+
+        serialized_recipe1 = RecipeSerializer(recipe1)
+        serialized_recipe2 = RecipeSerializer(recipe2)
+        serialized_recipe3 = RecipeSerializer(recipe3)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(serialized_recipe1.data, res.data)
+        self.assertIn(serialized_recipe2.data, res.data)
+        self.assertNotIn(serialized_recipe3.data, res.data)
+
 
 class ImageUploadTests(TestCase):
     """Tests for the image upload API"""

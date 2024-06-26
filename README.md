@@ -69,3 +69,4 @@ Recipes API
 -   In order to gather up all static files for all of the apps in the project, we use the `python manage.py collectstatic` command. This puts all the static files for all the apps in the `STATIC_ROOT`.
 -   We configure static/media URLs to behave differently in development vs prod in `app/app/urls.py`
 -   `SPECTACULAR_SETTINGS` is set in `settings.py` to ease file upload
+-   Adding query string parameter documentation and filtering by tags/ingredients (many-to-many) done in `RecipeViewSet.get_query_set` of `app/recipe/views.py`
