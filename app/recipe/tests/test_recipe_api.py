@@ -8,7 +8,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Recipe, Tag
+from core.models import Recipe, Tag, Ingredient
 from recipe.serializers import (
     RecipeSerializer,
     RecipeDetailSerializer
@@ -46,6 +46,17 @@ def create_tag(user, **params):
 
     tag = Tag.objects.create(user=user, **defaults)
     return tag
+
+
+def create_ingredient(user, **params):
+    """Create and return a sample ingredient."""
+    defaults = {
+        'name': 'sample ingredient',
+    }
+    defaults.update(params)
+
+    ingredient = Ingredient.objects.create(user=user, **defaults)
+    return ingredient
 
 
 def create_user(**params):
@@ -340,3 +351,139 @@ class PrivateRecipeApiTest(TestCase):
         # no need to recipe.refresh_from_db() because recipe.tags does a
         # new query since it's a many-to-many field
         self.assertEqual(recipe.tags.count(), 0)
+
+    def test_create_recipe_with_new_ingredients(self):
+        """Test creating a recipe with new ingredients"""
+        payload = {
+            'title': "Recipe with ingredients",
+            "link": "https://example.com/recipe-updated.pdf",
+            'description': "Sample description",
+            'time_minutes': 10,
+            'price': Decimal('2.50'),
+            'ingredients': [
+                {'name': 'Ingredient 1'},
+                {'name': 'Ingredient 2'},
+            ]
+        }
+        res = self.client.post(RECIPES_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipes = Recipe.objects.filter(user=self.user)
+        self.assertEqual(recipes.count(), 1)
+
+        recipe = recipes[0]
+        self.assertEqual(recipe.ingredients.count(), 2)
+
+        for ingredient in payload['ingredients']:
+            exists = recipe.ingredients.filter(
+                name=ingredient['name'], user=self.user
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_recipe_with_existing_ingredients(self):
+        """Test creating a recipe with existing ingredients"""
+        existing_ingredient = create_ingredient(
+            self.user, name="Existing Ingredient")
+        payload = {
+            'title': "Recipe with ingredients",
+            "link": "https://example.com/recipe-updated.pdf",
+            'description': "Sample description",
+            'time_minutes': 10,
+            'price': Decimal('2.50'),
+            'ingredients': [
+                {'name': existing_ingredient.name},
+                {'name': 'Ingredient 2'},
+            ]
+        }
+        res = self.client.post(RECIPES_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipes = Recipe.objects.filter(user=self.user)
+        self.assertEqual(recipes.count(), 1)
+
+        recipe = recipes[0]
+        self.assertEqual(recipe.ingredients.count(), 2)
+        self.assertIn(existing_ingredient, recipe.ingredients.all())
+
+        for payload_ingredient in payload['ingredients']:
+            exists = recipe.ingredients.filter(
+                name=payload_ingredient['name'], user=self.user
+            ).exists()
+            self.assertTrue(exists)
+
+        ingredients = Ingredient.objects.filter(user=self.user)
+        self.assertEqual(ingredients.count(), 2)
+
+    def test_create_ingredient_on_update(self):
+        """Test creating ingredients when updating recipes"""
+        ingredient_name = 'Ingredient 1'
+        recipe = create_recipe(self.user)
+
+        payload = {
+            'ingredients': [
+                {'name': ingredient_name},
+            ]
+        }
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        created_ingredient = Ingredient.objects.get(
+            user=self.user, name=ingredient_name
+        )
+        # no need to recipe.refresh_from_db() because recipe.ingredients.all() does a
+        # new query since it's a many-to-many field
+        self.assertIn(created_ingredient, recipe.ingredients.all())
+
+    def test_update_recipe_assign_ingredients(self):
+        """Test assigning existing ingredient and removing previous
+        ingredient when updating recipe"""
+        existing_ingredient = create_ingredient(
+            self.user,
+            name="Existing Ingredient 1"
+        )
+        existing_ingredient_2 = create_ingredient(
+            self.user,
+            name="Existing Ingredient 2"
+        )
+        recipe = create_recipe(self.user)
+        recipe.ingredients.add(existing_ingredient_2)
+
+        payload = {
+            'ingredients': [
+                {'name': existing_ingredient.name},
+            ]
+        }
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        # no need to recipe.refresh_from_db() because recipe.ingredients.all() does a
+        # new query since it's a many-to-many field
+        recipe_ingredients = recipe.ingredients.all()
+        self.assertIn(existing_ingredient, recipe_ingredients)
+        self.assertNotIn(existing_ingredient_2, recipe_ingredients)
+
+        all_ingredients = Ingredient.objects.filter(user=self.user)
+        self.assertEqual(all_ingredients.count(), 2)
+
+    def test_clear_recipe_ingredients(self):
+        """Test clearing recipes ingredients"""
+        existing_ingredient = create_ingredient(self.user)
+        existing_ingredient_2 = create_ingredient(self.user)
+        recipe = create_recipe(self.user)
+        recipe.ingredients.add(existing_ingredient)
+        recipe.ingredients.add(existing_ingredient_2)
+
+        payload = {
+            'ingredients': []
+        }
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        # no need to recipe.refresh_from_db() because recipe.ingredients does a
+        # new query since it's a many-to-many field
+        self.assertEqual(recipe.ingredients.count(), 0)
+
+        all_ingredients = Ingredient.objects.filter(user=self.user)
+        self.assertEqual(all_ingredients.count(), 2)

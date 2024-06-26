@@ -38,3 +38,4 @@ Recipes API
 -   Recipe app includes a CRUD oriented API following the same pattern as users (serializer, view, urls). This API uses one serializer for the list (omits description field), and another one for the rest of the endpoints.
 -   The create method is overriden for `RecipeSerializer` in `app/recipe/serializers.py` so as to create the tags included in with the recipe if they don't exist, and then saved in the recipe
 -   Recipe model includes manyToMany relations
+-   In the `app/recipe/views.py` file, the `mixins.UpdateModelMixin`, `mixins.DestroyModelMixin`, and `mixins.ListModelMixin` are responsible for enabling PUT/PATCH, DELETE, and GET methods
