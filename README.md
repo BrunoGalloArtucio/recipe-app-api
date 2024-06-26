@@ -35,3 +35,4 @@ Recipes API
     -   Viewsets: they're focused around actions, so the naming of the functions include names like retrieve, list, update, partial update, and destroy. Usually a viewset will map specifically to a model in your system. With viewsets, Routers can be used to automatically generate URLs. Viewsets are ideal for CRUD operation on a particular models.
 
 -   Recipe app includes a CRUD oriented API following the same pattern as users (serializer, view, urls). This API uses one serializer for the list (omits description field), and another one for the rest of the endpoints.
+-   The create method is overriden for `RecipeSerializer` in `app/recipe/serializers.py` so as to create the tags included in with the recipe if they don't exist, and then saved in the recipe

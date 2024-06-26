@@ -2,9 +2,15 @@
 
 from decimal import Decimal
 # We use TestCase because we need db for these tests
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from core import models
+
+
+def create_user(**params):
+    """Create and return a new user."""
+    return get_user_model().objects.create_user(**params)
 
 
 class ModelTests(TestCase):
@@ -14,7 +20,7 @@ class ModelTests(TestCase):
         """Test creating a user with an email successful."""
         email = "test@example.com"
         password = "testpassword123"
-        user = get_user_model().objects.create_user(
+        user = create_user(
             email=email,
             password=password
         )
@@ -33,7 +39,7 @@ class ModelTests(TestCase):
         password = "testpassword123"
 
         for test_case in sample_emails:
-            user = get_user_model().objects.create_user(
+            user = create_user(
                 email=test_case.get("email"),
                 password=password
             )
@@ -43,7 +49,7 @@ class ModelTests(TestCase):
         """Test that creating a user without email raises a ValueError."""
 
         with self.assertRaises(ValueError):
-            get_user_model().objects.create_user(
+            create_user(
                 email='',
                 password='password'
             )
@@ -59,7 +65,7 @@ class ModelTests(TestCase):
 
     def test_create_recipe(self):
         """Test creating a recipe is successful"""
-        user = get_user_model().objects.create_user(
+        user = create_user(
             email="test@example.com",
             password="testpassword123"
         )
@@ -73,3 +79,17 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(recipe), recipe.title)
+
+    def test_create_tag(self):
+        """Test creating a tag is successful"""
+        user = create_user(
+            email="test@example.com",
+            password="testpassword123"
+        )
+
+        tag = models.Tag.objects.create(
+            user=user,
+            name="Tag1"
+        )
+
+        self.assertEqual(str(tag), tag.name)
