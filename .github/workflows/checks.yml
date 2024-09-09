@@ -17,9 +17,9 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v2
 
-            # We don't have to install docker-compose in ubuntu-20.04 because it comes pre-installed
+            # We don't have to install docker compose in ubuntu-20.04 because it comes pre-installed
             - name: Test
-              run: docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py test"
+              run: docker compose run --rm app sh -c "python manage.py wait_for_db && python manage.py test"
 
             - name: Lint
-              run: docker-compose run --rm app sh -c "flake8"
+              run: docker compose run --rm app sh -c "flake8"

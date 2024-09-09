@@ -19,7 +19,7 @@ Recipes API
 -   Configure Postgresql in `docker-compose.yml`, installing dependencies in Dockerfile, and in `settings.py` DATABASES
 -   Create new app using `docker-compose run --rm app sh -c "python manage.py startapp core"` and add it to `settings.py` INSTALLED_APPS
 -   Fixing race condition on app vs db by creating custom Django management command (`app/core/management/commands/wait_for_db.py`). depends-on awaits for the service to start, but not for its application to start. This means that the app service will wait for the db-service to start, but postgresql may not yet be ready to accept connections. Command can be manually run using `docker-compose run --rm app sh -c "python manage.py wait_for_db"`. This command is called in docker-compose and on the checks.yml workflow.
--   Tests with mocks: app/core/tests/test_commands.py
+-   Tests with mocks: `app/core/tests/test_commands.py`
 -   Define custom user model to use instead of using the default django admin one so that it's easier to customize in the future (`app/core/models.py`). This is then configured in `settings.py` using `AUTH_USER_MODEL`. A common error when using a custom model is running a migration prior to defining it. To fix this, we need to clear the existing volume using `docker volume ls` to get the volume's name and then `docker volume rm <volume_name>`
 -   Testing exception is thrown: `app/core/tests/test_models.py`
 -   Add users to admin page: `app/core/admin.py`. This can be checked in `http://127.0.0.1:8000/admin`, after running `docker-compose up`
