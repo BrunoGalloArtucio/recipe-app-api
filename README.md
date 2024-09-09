@@ -16,7 +16,7 @@ Recipes API
 
 -   Configure linting tool flake8
 -   Configure Checks (Test and Lint) github workflow: .github/workflows/checks.yml. This gets automatically picked up by github. No need to create anything on Github
--   Configure Postgresql in docker-compose.yml, installing dependencies in Dockerfile, and in settings.py DATABASES
+-   Configure Postgresql in `docker-compose.yml`, installing dependencies in Dockerfile, and in `settings.py` DATABASES
 -   Create new app using `docker-compose run --rm app sh -c "python manage.py startapp core"` and add it to `settings.py` INSTALLED_APPS
 -   Fixing race condition on app vs db by creating custom Django management command (`app/core/management/commands/wait_for_db.py`). depends-on awaits for the service to start, but not for its application to start. This means that the app service will wait for the db-service to start, but postgresql may not yet be ready to accept connections. Command can be manually run using `docker-compose run --rm app sh -c "python manage.py wait_for_db"`. This command is called in docker-compose and on the checks.yml workflow.
 -   Tests with mocks: app/core/tests/test_commands.py
